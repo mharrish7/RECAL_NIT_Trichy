@@ -1,6 +1,9 @@
 import { func } from 'prop-types';
 import React, { useState } from 'react';
 import axios from 'axios'
+import {AnimatePresence,motion} from 'framer-motion'
+import { useNavigate } from "react-router-dom";
+import {Link} from 'react-router-dom'
 
 function Accomodation() {
 
@@ -14,7 +17,7 @@ function Accomodation() {
     const [costs,setcost] = useState(0)
     const [room2,setroom2] = useState([0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]);
     const [costs2,setcost2] = useState(0)
-
+    const [saved,sets] = useState(false);
     
     var key = 0;
     
@@ -32,10 +35,25 @@ function Accomodation() {
     }
 // change the pricess
     function sendpost(){
+        sets(false);
+
         console.log('ss');
-        var data = {'participationType' : fam, 'hotelRoom' : rreq, 'checkInDate' : cin, 'checkOutDate' : cout ,'hotel1' : room , 'hotel2' : room2};
-        axios.post('http://localhost:8080/api/data',data).then((res) => console.log(res.data));
-        // window.location.href = "/event-participation";
+        if(fam == 'single'){
+            var a = 0;
+            var s = 0;
+            var f = 0;
+            var g = 0;
+        }
+        else{
+        var a = document.querySelector('#alumni').value;
+        var s = document.querySelector('#spouse').value;
+        var f = document.querySelector('#family').value;
+        var g = document.querySelector('#grandkids').value;
+        }
+        var data = {'participationType' : fam, 'hotelRoom' : rreq, 'checkInDate' : cin, 'checkOutDate' : cout ,'alumni' : a ,'spouse' : s,'familyMembers' : f,'grandKids' : g,'hotel1' : room , 'hotel2' : room2};
+        axios.post('http://localhost:8080/api/accomodationSave',data).then((res) => console.log(res.data));
+        sets(true);
+        
     }
 
 
@@ -50,9 +68,19 @@ function Accomodation() {
         console.log(cost);
         setcost2(cost);
     }
+    const variants1 = {
+        anim : {
+            x : "0",
+            transition : {
+                delay : 0.6 , 
+                duration : 0.7, 
+            }
+        }
 
+    }
     return (
-        <>
+        <motion.div variants={variants1} exit={{x:'-100vw'}} initial ={{x:'-100vw'}} animate="anim" className = "outerc" transition={{duration : 0.3}}>
+         
          <div className='mtitle'><h1 className='title'>Accomodation</h1></div>
          
          <div className='mainc'>
@@ -66,34 +94,37 @@ function Accomodation() {
             </label>
             <br />
             <br />
-            {fam == 'withFamily' && <div className='fdetails'>
+            <AnimatePresence>
+            {fam == 'withFamily' && <motion.div
+             initial ={{opacity : 0}} animate = {{opacity : 1}} transition = {{duration : 1}}
+             className='fdetails'>
                     <table>
                     <tbody>
                         <tr>
                         <td><label>Alumni count 
                         
                     </label></td>
-                    <td><input type="number" min = "0"/></td>
+                    <td><input type="number" id='alumni' min = "0" value="0"/></td>
                         </tr>
                         <tr>
                         <td>
                     <label>Spouse count 
                         
                     </label></td>
-                    <td><input type="number" min = "0"/></td>
+                    <td><input type="number" id='spouse' min = "0" value="0"/></td>
                         </tr>
                         <tr>
                         <td>
                     <label>Family members count 
                         
                     </label></td>
-                    <td><input type="number" min = "0"/></td>
+                    <td><input type="number" id='family' min = "0" value="0"/></td>
                         </tr>
                         <tr>
                         <td>
                         <label>Grand Kids count 
                     </label></td>
-                    <td> <input type="number" min = "0"/>
+                    <td> <input type="number" id='grandkids' min = "0" value="0"/>
 </td>
                         </tr>
                     </tbody>
@@ -102,7 +133,8 @@ function Accomodation() {
                     
                     
                     
-                </div>}
+                </motion.div>}
+                </AnimatePresence>
                 <br />
             <br />
 
@@ -440,9 +472,12 @@ function Accomodation() {
                 </div>}
 
                 <p>Total Cost : {costs + costs2}</p>
-                <button onClick={() => sendpost()}>Save and continue</button>
+                <button onClick={() => sendpost()}>Save</button>
+            
+                {saved && <Link to="/event-participation" ><button>Continue</button> </Link>}
+                {saved &&  <p>Successfully Saved</p>}
                 </div>
-        </>
+        </motion.div>
         
     );
 }
